@@ -4,7 +4,6 @@ import * as express from 'express';
 import {createServer} from "http";
 import FS from "../../io/FS";
 import Config from "../../config/Config";
-import HttpMsgHandler from "../../io/http/HttpMsgHandler";
 import WebServerProcess from "../process/WebServerProcess";
 import * as path from "path";
 import UpdateAppVersion from "../../deploy/cmd/UpdateAppVersion";
@@ -46,9 +45,7 @@ export default class CmdHandler {
     }
 
     async runApp(port: string) {
-
-        const httpMsgHandler = new HttpMsgHandler(this.fs, this.config, this.logger);
-        const httpServer = new HttpServer(createServer, express, httpMsgHandler, this.fs);
+        const httpServer = new HttpServer(createServer, express, this.fs);
         httpServer.getServer().listen(`${port}`);
         console.log(`Webserver start on port: [${port}]`);
     }

@@ -1,34 +1,34 @@
-import {Express, NextFunction, Request, Response} from "express";
+import {Express, Request, Response} from "express";
 import {Server} from "http";
-import HttpMsgHandler from "./HttpMsgHandler";
 import FS from "../FS";
-import * as bodyParser from "body-parser";
 import * as formidable from "formidable";
-import * as path from "path";
 
 export default class HttpServer {
 
     server: Server;
     fs: FS;
 
-    constructor(createServer: any, express: Express, httpMsgHandler: HttpMsgHandler, fs: FS) {
+    constructor(createServer: any, express: Express, fs: FS) {
 
         this.fs = fs;
         const stateFile = './storage/state2.json';
-        const mediaDir = 'D:/youtube/source';
+        //const mediaDir = 'D:/youtube/source';
+        const mediaDir = '/home/any/Downloads';
         const artstationDir = mediaDir + '/artstation';
+        const htmlFile = './index.html';
 
         let app = express();
-        app.use(express.static('D:/youtube'));
+        //app.use(express.static('./'));
 
-        app.get('/min.js', async (req: Request, res: Response) => res.send(await this.fs.readFile('./min.js')));
+        app.get('/', async (req: Request, res: Response) => res.send( await this.fs.readFile(htmlFile) ));
+        app.get('/js', async (req: Request, res: Response) => res.send(await this.fs.readFile('./min.js')));
 
-        app.get('/state', async (req: Request, res: Response) => res.send( await this.fs.readFile(stateFile) ));
+        /*app.get('/state', async (req: Request, res: Response) => res.send( await this.fs.readFile(stateFile) ));
         app.post('/state', bodyParser.json({}), async (req: Request, res: Response) => {
             console.log('save');
             await this.fs.writeFile(stateFile, JSON.stringify(req.body.data))
             res.send({});
-        });
+        });*/
         app.post('/upload', async (req: Request, res: Response) => {
 
             const form = formidable({ multiples: true });
@@ -39,9 +39,7 @@ export default class HttpServer {
             form.parse(req, async (err, fields, files) => {
                 if (err) console.log(err);
 
-                if (Object.keys(fields).length) {
-                    console.log(fields);
-                }
+                if (Object.keys(fields).length) console.log(fields);
                 if (Object.keys(files).length) {
 
                     for (let fileName in files) {
@@ -63,21 +61,7 @@ export default class HttpServer {
             });
         });
 
-        app.get('/mediaFiles', async (req: Request, res: Response) => res.send(JSON.stringify( (await fs.readDir(mediaDir)) )));
-        app.get('/artStationFiles', async (req: Request, res: Response) => res.send(JSON.stringify(await fs.readDir(artstationDir))));
-
-        app.use(async (req: Request, res: Response, next: NextFunction) => await httpMsgHandler.handle(req, res, next));
-
         this.server = createServer({}, app);
-
-        /*if (this.upgradeHandler) {
-            this.server.on('upgrade', (req, clientSocket, head) => {
-                this.upgradeHandler(req, clientSocket, head)
-            })
-        }*/
-        /*if (this.requestHandler) app.use((req, res, next) => {
-            this.requestHandler({req, res, next})
-        })*/
     }
 
     getServer(): Server {
