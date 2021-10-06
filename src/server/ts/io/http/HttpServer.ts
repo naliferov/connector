@@ -11,24 +11,12 @@ export default class HttpServer {
     constructor(createServer: any, express: Express, fs: FS) {
 
         this.fs = fs;
-        const stateFile = './storage/state2.json';
-        //const mediaDir = 'D:/youtube/source';
         const mediaDir = '/home/any/Downloads';
-        const artstationDir = mediaDir + '/artstation';
         const htmlFile = './index.html';
 
         let app = express();
-        //app.use(express.static('./'));
-
         app.get('/', async (req: Request, res: Response) => res.send( await this.fs.readFile(htmlFile) ));
         app.get('/js', async (req: Request, res: Response) => res.send(await this.fs.readFile('./min.js')));
-
-        /*app.get('/state', async (req: Request, res: Response) => res.send( await this.fs.readFile(stateFile) ));
-        app.post('/state', bodyParser.json({}), async (req: Request, res: Response) => {
-            console.log('save');
-            await this.fs.writeFile(stateFile, JSON.stringify(req.body.data))
-            res.send({});
-        });*/
         app.post('/upload', async (req: Request, res: Response) => {
 
             const form = formidable({ multiples: true });
@@ -37,15 +25,15 @@ export default class HttpServer {
             let count = 0;
 
             form.parse(req, async (err, fields, files) => {
-                if (err) console.log(err);
 
+                console.log('income request ' + Date.now(), fields, err);
                 if (Object.keys(fields).length) console.log(fields);
-                if (Object.keys(files).length) {
+                if (!Object.keys(files).length) { res.send({noFiles: 1}); return; }
 
-                    for (let fileName in files) {
-                        let file = files[fileName];
-                        console.log(fileName);
-
+                const processFile = async (file) => {
+                    if (Array.isArray(file)) {
+                        for (let i = 0; i < file.length; i++) await processFile(file[i]);
+                    } else {
                         let ext = '';
                         if (file.type.includes('jpeg') || file.type.includes('jpg')) ext = 'jpg';
                         if (file.type.includes('codecs=pcm')) ext = 'wav';
@@ -54,18 +42,15 @@ export default class HttpServer {
 
                         await fs.move(file.path, `${mediaDir}/${Date.now()}-${++count}.${ext}`);
                     }
-                }
-
-                console.log('income request ' + Date.now());
-                res.send({});
+                };
+                for (let fileName in files) await processFile(files[fileName]);
+                res.send({ok: 1});
             });
         });
 
         this.server = createServer({}, app);
     }
 
-    getServer(): Server {
-        return this.server;
-    }
+    getServer(): Server { return this.server; }
 }
 

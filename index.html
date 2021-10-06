@@ -161,7 +161,12 @@
     </style>
 </head>
 <body>
-<div id="app"></div>
+<div id="app">
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="example_name" multiple>
+        <button type="submit">send</button>
+    </form>
+</div>
 <script src="/js"></script>
 </body>
 </html>
