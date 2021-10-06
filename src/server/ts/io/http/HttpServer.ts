@@ -11,7 +11,7 @@ export default class HttpServer {
     constructor(createServer: any, express: Express, fs: FS) {
 
         this.fs = fs;
-        const mediaDir = '/home/any/Downloads';
+        const mediaDir = './';
         const htmlFile = './index.html';
 
         let app = express();

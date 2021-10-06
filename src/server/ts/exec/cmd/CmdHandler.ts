@@ -16,32 +16,10 @@ export default class CmdHandler {
     logger: Logger
 
     constructor(cliArgs: any, config: Config, logger: Logger) {
-
         this.config = config;
         this.fs = new FS;
         this.logger = logger;
-
-        const cmd = cliArgs.cmd || cliArgs[0];
-        if (!cmd) {
-            logger.info(`cmd: [${cmd}]`);
-            return;
-        }
-        logger.info(`try execute cmd: [${cmd}]`);
-
-        const self = this;
-        const map = {
-            containers: async () => {
-                console.log ( await (new UpdateAppVersion()).showDockerContainersNames() );
-            },
-            runApp: () => self.runApp(cliArgs.port ?? '8080'),
-            runDocker: () => {
-                let processA = new WebServerProcess(path.resolve('../dirA'), 'processB', 'x.js');
-                processA.setPort('8083');
-                (new UpdateAppVersion()).runServer(processA.getPath(), processA.getExecFilePath(), processA.getName(), processA.getPort());
-            },
-            test: () => new TestHandler().exec()
-        };
-        if (map[cmd]) map[cmd](cmd);
+        this.runApp(cliArgs.port ?? '8080');
     }
 
     async runApp(port: string) {
