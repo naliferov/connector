@@ -1,0 +1,6 @@
+class ServiceFactory {
+
+    getHttpClient() {
+
+    }
+}
